@@ -4,10 +4,8 @@ NFT Global ID Minting: Linking Real-World Assets to Ethereum with OpenSea. Teste
 
 ##Instalation
 
-´
-npm i
-´
+`npm i`
 
-´npm run dev´´
+`npm run dev`
 
-This project is licensed under the [License Name] - see the [LICENSE.md](LICENSE.md) file for details.
+
