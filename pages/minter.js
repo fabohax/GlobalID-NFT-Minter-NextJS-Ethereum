@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { minter } from '../fun/minter';
+import { mint } from '../fun/minter';
+
+const OpenSea = require('opensea-js');
 
 export default function Minter() {
   const [formData, setFormData] = useState({
-    name: '',
-    lastName: '',
-    dateOfBirth: '',
-    country: '',
-    passport: '',
-    email: '',
-    pic: '',
-    social: '',
-    site: '',
+    NAME: '',
+    LAST_NAME: '',
+    DATE_OF_BIRTH: '',
+    COUNTRY: '',
+    PASSPORT_NUMBER: '',
+    EMAIL: '',
+    PICTURE: '',
+    SOCIAL: '',
+    SITE: '',
   });
 
   const [walletConnected, setWalletConnected] = useState(false);
@@ -43,26 +45,33 @@ export default function Minter() {
   };
 
   async function handleMint() {
-    const { name, lastName, dateOfBirth, country, passport, email, pic, social, site } = formData;
-
+    const { NAME, LAST_NAME, DATE_OF_BIRTH, COUNTRY, PASSPORT, EMAIL, PICTURE, SOCIAL, SITE } = formData;
+  
     // Check if a wallet is connected
     if (!walletConnected) {
       console.error('Wallet not connected. Please connect your wallet.');
       return;
     }
-
+  
+    // Check if the wallet is connected to the Sepolia testnet.
+    const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+    if (chainId !== 11155111) {
+      console.error('Wallet not connected to the Sepolia testnet. Please connect to the Sepolia testnet.');
+      return;
+    }
+  
     // Perform the minting process using the connected account and form data
     try {
-      const asset = await minter(name, lastName, dateOfBirth, country, passport, email, pic, social, site, account);
-
+      const asset = await mint(NAME, LAST_NAME, DATE_OF_BIRTH, COUNTRY, PASSPORT, EMAIL, PICTURE, SOCIAL, SITE, account, 11155111);
+  
       // Display the NFT asset to the user.
       console.log('Minted NFT:', asset);
     } catch (error) {
       console.error('Error minting NFT:', error);
     }
   }
-
-    async function handleConnectWallet() {
+  
+  async function handleConnectWallet() {
     // Connect to the Sepolia testnet.
     await window.ethereum.request({ chainId: 11155111 });
   }
@@ -78,29 +87,31 @@ export default function Minter() {
       {walletConnected && (
         <div id="minter-div">
           <h1>Mint your Global ID</h1>
-          {Object.entries(formData).map(([field, value]) => (
-            <input
-              key={field}
-              type={field === 'dateOfBirth' ? 'date' : 'text'}
-              name={field}
-              placeholder={field}
-              value={value}
-              onChange={handleInputChange}
-              className='block mb-2 p-4 w-full'
-            />
-          ))}
+          <br></br>
           <input
             type="file"
-            name="pic"
+            name="PICTURE"
             onChange={handleInputChange}
             className='block mb-2 p-4 border-solid border-white border-2'
           />
+          {Object.entries(formData)
+          .filter(([field]) => field !== 'PICTURE')
+          .map(([field, value]) => (
+            <input
+              key={field}
+              type={field === 'DATE_OF_BIRTH' ? 'date' : 'text'}
+              name={field === 'LAST_NAME' ? 'LAST_NAME' : field}
+              placeholder={field}
+              value={value}
+              onChange={handleInputChange}
+              className='block mb-2 p-4 w-full text-black'
+            />
+          ))}
+          <button onClick={handleMint} className='bg-white p-4 text-black mb-4'>
+            Mint
+          </button>
         </div>
-      )}
-
-      <button onClick={handleMint} className='bg-white p-4 text-black mb-4'>
-        Mint
-      </button>
+      )}      
     </div>
   );
 }

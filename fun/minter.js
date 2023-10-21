@@ -1,6 +1,6 @@
 const OpenSea = require('opensea-js');
 
-async function minter(name, lastName, dateOfBirth, country, passport, email, pic, social, site) {
+async function mint(NAME, LAST_NAME, DATE_OF_BIRTH, COUNTRY, PASSPORT, EMAIL, PICTURE, SOCIAL, SITE) {
   // Create a new OpenSea client.
   const client = new OpenSea();
 
@@ -9,19 +9,19 @@ async function minter(name, lastName, dateOfBirth, country, passport, email, pic
 
   // Create a new NFT asset.
   const asset = {
-    name,
-    lastName,
-    dateOfBirth,
-    country,
-    passport,
-    email,
-    pic,
-    social,
-    site
+    NAME,
+    LAST_NAME,
+    DATE_OF_BIRTH,
+    COUNTRY,
+    PASSPORT,
+    EMAIL,
+    PICTURE,
+    SOCIAL,
+    SITE
   };
 
   // Mint the NFT.
-  const txId = await client.mintNFT(asset);
+  const txId = await client.mint(asset);
 
   // Wait for the transaction to be confirmed.
   await client.waitForTransactionConfirmation(txId);
