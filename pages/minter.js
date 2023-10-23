@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { mint } from '../fun/minter';
+import { mintNFT } from '../fun/minter';
 
 const OpenSea = require('opensea-js');
 
@@ -11,8 +11,6 @@ export default function Minter() {
     COUNTRY: '',
     PASSPORT_NUMBER: '',
     EMAIL: '',
-    PICTURE: '',
-    SOCIAL: '',
     SITE: '',
   });
 
@@ -45,7 +43,7 @@ export default function Minter() {
   };
 
   async function handleMint() {
-    const { NAME, LAST_NAME, DATE_OF_BIRTH, COUNTRY, PASSPORT, EMAIL, PICTURE, SOCIAL, SITE } = formData;
+    const { NAME, LAST_NAME, DATE_OF_BIRTH, COUNTRY, PASSPORT, EMAIL, SITE } = formData;
   
     // Check if a wallet is connected
     if (!walletConnected) {
@@ -62,7 +60,7 @@ export default function Minter() {
   
     // Perform the minting process using the connected account and form data
     try {
-      const asset = await mint(NAME, LAST_NAME, DATE_OF_BIRTH, COUNTRY, PASSPORT, EMAIL, PICTURE, SOCIAL, SITE, account, 11155111);
+      const asset = await mintNFT(NAME, LAST_NAME, DATE_OF_BIRTH, COUNTRY, PASSPORT, EMAIL, SITE);
   
       // Display the NFT asset to the user.
       console.log('Minted NFT:', asset);
@@ -100,7 +98,7 @@ export default function Minter() {
             <input
               key={field}
               type={field === 'DATE_OF_BIRTH' ? 'date' : 'text'}
-              name={field === 'LAST_NAME' ? 'LAST_NAME' : field}
+              name={field}
               placeholder={field}
               value={value}
               onChange={handleInputChange}

@@ -1,6 +1,6 @@
 const OpenSea = require('opensea-js');
 
-async function mint(NAME, LAST_NAME, DATE_OF_BIRTH, COUNTRY, PASSPORT, EMAIL, PICTURE, SOCIAL, SITE) {
+async function mintNFT(NAME, LAST_NAME, DATE_OF_BIRTH, COUNTRY, PASSPORT, EMAIL, SITE) {
   // Create a new OpenSea client.
   const client = new OpenSea();
 
@@ -15,13 +15,13 @@ async function mint(NAME, LAST_NAME, DATE_OF_BIRTH, COUNTRY, PASSPORT, EMAIL, PI
     COUNTRY,
     PASSPORT,
     EMAIL,
-    PICTURE,
-    SOCIAL,
     SITE
   };
 
   // Mint the NFT.
-  const txId = await client.mint(asset);
+  const txId = await client.mintNFT(asset, {
+    chainId: 11155111, // Sepolia testnet chain ID
+  });
 
   // Wait for the transaction to be confirmed.
   await client.waitForTransactionConfirmation(txId);
