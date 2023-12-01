@@ -18,7 +18,7 @@ const roboto = Roboto({
 function App ({Component, pageProps}) {
     return(
         <main className={roboto.className}>
-            <Head><title>Tilata</title></Head>
+            <Head><title>GID</title></Head>
             <Component {...pageProps}/>
         </main> 
     )

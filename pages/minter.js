@@ -1,21 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { mintNFT } from '../fun/minter';
+import OpenSea from 'opensea-js';
+import mintNFT from '../fun/minter';
+import Link from 'next/link';
+import Image from 'next/image';
 
-const OpenSea = require('opensea-js');
 
 export default function Minter() {
   const [formData, setFormData] = useState({
     NAME: '',
     LAST_NAME: '',
     DATE_OF_BIRTH: '',
-    COUNTRY: '',
-    PASSPORT_NUMBER: '',
-    EMAIL: '',
-    SITE: '',
+    ORIGIN: '',
   });
 
   const [walletConnected, setWalletConnected] = useState(false);
   const [account, setAccount] = useState(null);
+  const [connectedWalletAddress, setConnectedWalletAddress] = useState(null);
+
   useEffect(() => {
     async function checkWalletConnection() {
       if (window.ethereum) {
@@ -35,7 +36,18 @@ export default function Minter() {
     }
 
     checkWalletConnection();
-  }, []);
+
+    const getConnectedWalletAddress = async () => {
+      if (walletConnected) {
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        setConnectedWalletAddress(accounts[0]);
+      } else {
+        setConnectedWalletAddress(null);
+      }
+    };
+
+    getConnectedWalletAddress();
+  }, [walletConnected]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -43,36 +55,56 @@ export default function Minter() {
   };
 
   async function handleMint() {
-    const { NAME, LAST_NAME, DATE_OF_BIRTH, COUNTRY, PASSPORT, EMAIL, SITE } = formData;
-  
+    const { NAME, LAST_NAME, DATE_OF_BIRTH, ORIGIN, UBIGEO} = formData;
+
     // Check if a wallet is connected
     if (!walletConnected) {
       console.error('Wallet not connected. Please connect your wallet.');
       return;
     }
-  
+
     // Check if the wallet is connected to the Sepolia testnet.
-    const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-    if (chainId !== 11155111) {
-      console.error('Wallet not connected to the Sepolia testnet. Please connect to the Sepolia testnet.');
-      return;
+    async function isConnectedToSepolia() {
+      // Get the current chain ID.
+      const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+    
+      // Compare the chain ID to the Sepolia testnet chain ID.
+      return chainId === '0xaa36a7';
     }
-  
+    
+    
+
     // Perform the minting process using the connected account and form data
     try {
-      const asset = await mintNFT(NAME, LAST_NAME, DATE_OF_BIRTH, COUNTRY, PASSPORT, EMAIL, SITE);
-  
+      isConnectedToSepolia();
+      const asset = await mintNFT(NAME, LAST_NAME, DATE_OF_BIRTH, ORIGIN);
       // Display the NFT asset to the user.
       console.log('Minted NFT:', asset);
     } catch (error) {
       console.error('Error minting NFT:', error);
     }
   }
-  
+
   async function handleConnectWallet() {
     // Connect to the Sepolia testnet.
-    await window.ethereum.request({ chainId: 11155111 });
+    await window.ethereum.request({
+      method: 'wallet_switchEthereumChain',
+      params: [{ chainId: '0xaa36a7' }],
+    });
+  
+    // Add an event listener to be notified when the list of connected accounts changes.
+    window.ethereum.on('accountsChanged', () => {
+      // Update or refresh the page.
+    });
   }
+
+  const [location, setLocation] = useState({ lat: 0, lng: 0 }); // Default location
+
+  const handleLocationChange = (e) => {
+    setLocation(e.latlng);
+  };
+
+
 
   return (
     <div className='p-4 mx-auto my-auto grid place-content-center pt-12'>
@@ -84,32 +116,54 @@ export default function Minter() {
 
       {walletConnected && (
         <div id="minter-div">
-          <h1>Mint your Global ID</h1>
+          {connectedWalletAddress && (
+            <button id="connected-wallet-address" className='bg-gray p-4 text-white mb-4 rounded-lg border-2 border-gray-500'>
+              {connectedWalletAddress}
+            </button>
+          )}
           <br></br>
-          <input
-            type="file"
-            name="PICTURE"
-            onChange={handleInputChange}
-            className='block mb-2 p-4 border-solid border-white border-2'
-          />
-          {Object.entries(formData)
-          .filter(([field]) => field !== 'PICTURE')
-          .map(([field, value]) => (
+          <button className='bg-gray-950 p-4 pt-48 pb-48 text-gray-400 mb-4 rounded-lg border-2 border-gray-500 w-full'>PICTURE</button>
             <input
-              key={field}
-              type={field === 'DATE_OF_BIRTH' ? 'date' : 'text'}
-              name={field}
-              placeholder={field}
-              value={value}
+              key='NAME'
+              type='text'
+              name='NAME'
+              placeholder='NAME'
+              value=''
               onChange={handleInputChange}
-              className='block mb-2 p-4 w-full text-black'
+              className='block mb-2 p-4 w-full text-black rounded-lg border-2'
             />
-          ))}
-          <button onClick={handleMint} className='bg-white p-4 text-black mb-4'>
-            Mint
+            <input
+              key='LAST_NAME'
+              type='text'
+              name='LAST_NAME'
+              placeholder='LAST_NAME'
+              value=''
+              onChange={handleInputChange}
+              className='block mb-2 p-4 w-full text-black rounded-lg border-2'
+            />
+            <input
+              key='DATE_OF_BIRTH'
+              type='date'
+              name='DATE_OF_BIRTH'
+              placeholder='DATE_OF_BIRTH'
+              value=''
+              onChange={handleInputChange}
+              className='block mb-2 p-4 w-full text-black rounded-lg border-2'
+            />
+          <button
+            className="bg-gray-50 p-4 text-black mb-4 rounded-lg border-2 w-full"
+          >
+            BIRTH ORIGIN
+          </button>
+          <br></br>
+          <button onClick={handleMint} className='bg-black p-4 text-white mb-4 border-2 border-white rounded-lg w-full'>
+            MINT
           </button>
         </div>
-      )}      
+      )}
+      <Link href="/minter">
+            <Image src="/logo.svg" height="72" width="72" alt="tilata" className="invert mx-auto pt-8 h-full" />
+        </Link>
     </div>
   );
 }
